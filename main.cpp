@@ -22,12 +22,11 @@ int main()
 {
 	setlocale(LC_ALL, "");
 	int output;
-	string test = "C:\\Users\\Maciek\\";
+	string test = "D:\\Dropbox\\Maciej";
 	char* file = new char[test.size() + 1];
 	strcpy(file, test.c_str());
 	
-	if( czyKatalog(test) )
-		listujPliki(file);
+	listujPliki(file);
 
 	//file = "D:\\Dropbox\\TeX\\MHDD\\instrukcjaMHDD.pdf";
 	/* Nadawanie atrybutów:
@@ -57,9 +56,8 @@ int main()
 		push eax
 		call GetFileAttributes
 		mov output, eax
-	}*/
-	if (output == (0x04))
-		cout << output;
+	}
+	cout << output << "\n";*/
 	//asmMain();
 	//asmMainD();
 	system("pause");
@@ -79,42 +77,53 @@ void listujPliki(const char * nazwa_sciezki){
 		while ((plik = readdir(sciezka))){
 			cout << plik->d_name;
 			//puts(plik->d_name);
-			if (stat(plik->d_name, &st) == 0){
-				if (st.st_mode & S_IFREG){
-					// trzeba z³o¿yæ œcie¿kê do pliku:
-					file = new char[strlen(nazwa_sciezki) + strlen(plik->d_name)];
-					strcpy(file, nazwa_sciezki);
-					strcat(file, plik->d_name);
-					_asm{
-						mov eax, file
-							push eax
-							call GetFileAttributes
-							mov output, eax
-					}
-					switch (output){
-						case 0x01: // tylko do odczytu
-							cout << "   ro ";
-							break;
-						case 0x02: // ukryty
-							cout << "   u ";
-							break;
-						case 0x03: // tylko do odczytu i ukryty
-							cout << "   ro-u ";
-							break;
-						case 0x04: // systemowy
-							cout << "   s ";
-							break;
-						case 0x20: // archiwalny
-							cout << "   a ";
-							break;
-					}
+			stat(plik->d_name, &st);
+			if (S_ISREG(st.st_mode) || S_ISDIR(st.st_mode)){
+				// trzeba z³o¿yæ œcie¿kê do pliku:
+				file = new char[strlen(nazwa_sciezki) + strlen(plik->d_name) + 4];
+				strcpy(file, nazwa_sciezki);
+				if (!czyKatalog(nazwa_sciezki))
+					strcat(file, "\\");
+				strcat(file, plik->d_name);
+				_asm{
+					mov eax, file
+					push eax
+					call GetFileAttributes
+					mov output, eax
+				}
+				cout << "   " << output;
+				switch (output){
+					case 0x01: // tylko do odczytu
+						cout << " ro ";
+						break;
+					case 0x02: // ukryty
+						cout << " h ";
+						break;
+					case 0x03: // tylko do odczytu i ukryty
+						cout << " ro-h ";
+						break;
+					case 0x04: // systemowy
+						cout << " s ";
+						break;
+					case 0x10: // systemowy
+						cout << " dir ";
+						break;
+					case 0x11: // systemowy
+						cout << " dir ro ";
+						break;
+					case 0x12: // systemowy
+						cout << " dir h ";
+						break;
+					case 0x14: // systemowy
+						cout << " dir ro-h ";
+						break;
+					case 0x20: // archiwalny
+						cout << " a ";
+						break;
 				}
 			}
 			cout << "\n";
-			
-			
 		}
-
 		closedir(sciezka);
 	}
 	else
