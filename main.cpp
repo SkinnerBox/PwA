@@ -120,6 +120,9 @@ void listujPliki(const char * nazwa_sciezki){
 					case 0x20: // archiwalny
 						cout << " a ";
 						break;
+					case 0x30: // archiwalny
+						cout << " dir a ";
+						break;
 				}
 			}
 			cout << "\n";
