@@ -77,27 +77,40 @@ void listujPliki(const char * nazwa_sciezki){
 
 	if ((sciezka = opendir(nazwa_sciezki))) {
 		while ((plik = readdir(sciezka))){
-			puts(plik->d_name);
+			cout << plik->d_name;
+			//puts(plik->d_name);
 			if (stat(plik->d_name, &st) == 0){
 				if (st.st_mode & S_IFREG){
-					//file_name = plik->d_name;
+					// trzeba z³o¿yæ œcie¿kê do pliku:
 					file = new char[strlen(nazwa_sciezki) + strlen(plik->d_name)];
 					strcpy(file, nazwa_sciezki);
 					strcat(file, plik->d_name);
-
-					//test = sciezka + file_name;
-					//file = new char[test.size() + 1];
-					//strcpy(file, test.c_str());
 					_asm{
 						mov eax, file
 							push eax
 							call GetFileAttributes
 							mov output, eax
 					}
-					if (output == (0x04))
-						cout << "   u \n";
+					switch (output){
+						case 0x01: // tylko do odczytu
+							cout << "   ro ";
+							break;
+						case 0x02: // ukryty
+							cout << "   u ";
+							break;
+						case 0x03: // tylko do odczytu i ukryty
+							cout << "   ro-u ";
+							break;
+						case 0x04: // systemowy
+							cout << "   s ";
+							break;
+						case 0x20: // archiwalny
+							cout << "   a ";
+							break;
+					}
 				}
 			}
+			cout << "\n";
 			
 			
 		}
