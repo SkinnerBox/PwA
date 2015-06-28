@@ -12,7 +12,14 @@ using namespace std;
 //extern "C" void asmMain();
 //extern "C" void asmMainD();
 
-//char file[] = "SAMPLE.TXT";
+/* Nadawanie atrybutów:
+CX         Attribute specified
+00h        Normal
+01h        Read - only
+02h        Hidden
+04h        System
+20h        Archive
+*/
 
 //char file[] = "C:\\Users\\Maciek\\SAMPLE.TXT";//"D:\\Dropbox\\TeX\\MHDD\\instrukcjaMHDD.pdf";
 string nowy;
@@ -46,14 +53,7 @@ int main()
 
 
 		//file = "D:\\Dropbox\\TeX\\MHDD\\instrukcjaMHDD.pdf";
-		/* Nadawanie atrybutów:
-		CX         Attribute specified
-		00h        Normal
-		01h        Read - only
-		02h        Hidden
-		04h        System
-		20h        Archive
-		*/
+		
 		/*
 		_asm{
 		mov eax, 03h
@@ -113,7 +113,7 @@ char* nowaSciezka(void){
 		szyfrowanie(nowy);
 	}
 	else{//wchodzenie do nowego folderu
-		nowy = "\\" + nowy + "\\";
+		nowy = nowy + "\\";
 		char* temp = new char[nowy.size() + 1];
 		strcpy(temp, nowy.c_str());
 		strcat(file, temp);
