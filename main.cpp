@@ -32,6 +32,8 @@ char* file5 = new char[test.size() + 1];
 
 char* nowaSciezka(void);
 void ukrywanie(string plik);
+void systemowy(string plik);
+void readonly(string plik);
 void szyfrowanie(string plik);
 void listujPliki(const char * nazwa_sciezki);
 bool czyKatalog(string sciezka);
@@ -112,6 +114,12 @@ char* nowaSciezka(void){
 	}
 	else if (nowy[0] == 'h' && nowy[1] == 'i' && nowy[2] == 'd' && nowy[3] == 'e'){
 		ukrywanie(nowy);
+	}
+	else if (nowy[0] == 's' && nowy[1] == 'y' && nowy[2] == 's'){
+		systemowy(nowy);
+	}
+	else if (nowy[0] == 'r' && nowy[1] == 'e' && nowy[2] == 'a' && nowy[3] == 'd' && nowy[4] == 'o' && nowy[5] == 'n' && nowy[6] == 'l' && nowy[7] == 'y'){
+		readonly(nowy);
 	}
 	else if (nowy[0] == 'e' && nowy[1] == 'n' && nowy[2] == 'c' && nowy[3] == 'r' && nowy[4] == 'y' && nowy[5] == 'p' && nowy[6] == 't'){
 		szyfrowanie(nowy);
@@ -204,6 +212,46 @@ void enkrypcja(char *buf, unsigned count, unsigned char encryptChar)
 	}
 }
 
+void systemowy(string plik){
+	int output = 0;
+	char* temp3 = new char[plik.size() + 1];
+	char* temp4 = new char[plik.size() + 1 - 4];
+	strcpy(temp3, plik.c_str());
+	for (int i = 0; i < plik.size() + 1 - 4; i++){
+		temp4[i] = temp3[i + 4];
+	}
+	strcpy(file2, file);
+	strcat(file2, temp4);
+	cout << file;
+	_asm{
+		mov eax, file2
+			push eax
+			call GetFileAttributes
+			mov output, eax
+	}
+	if (output == 0x04){//plik aktualnie ukryty - odkrwanie
+		_asm{
+			mov eax, 00h
+				push eax
+				mov  eax, file2
+				push eax
+				call SetFileAttributes
+				pop ebx
+				pop ebx
+		}
+	}
+	else{//ukrywanie
+		_asm{
+			mov eax, 04h
+				push eax
+				mov  eax, file2
+				push eax
+				call SetFileAttributes
+				pop ebx
+				pop ebx
+		}
+	}
+}
 
 void ukrywanie(string plik){
 	int output = 0;
@@ -233,9 +281,82 @@ void ukrywanie(string plik){
 				pop ebx
 		}
 	}
+	else if (output == 0x03) { // gdy plik jednoczeœnie ukryty i tylko do odczytu
+		_asm{
+			mov eax, 01h
+				push eax
+				mov  eax, file2
+				push eax
+				call SetFileAttributes
+				pop ebx
+				pop ebx
+		}
+	}
 	else{//ukrywanie
 		_asm{
 			mov eax, 02h
+				push eax
+				mov  eax, file2
+				push eax
+				call SetFileAttributes
+				pop ebx
+				pop ebx
+		}
+	}
+}
+void readonly(string plik){
+	int output = 0;
+	char* temp3 = new char[plik.size() + 1];
+	char* temp4 = new char[plik.size() + 1 - 9];
+	strcpy(temp3, plik.c_str());
+	for (int i = 0; i < plik.size() + 1 - 9; i++){
+		temp4[i] = temp3[i + 9];
+	}
+	strcpy(file2, file);
+	strcat(file2, temp4);
+	cout << file;
+	_asm{
+		mov eax, file2
+			push eax
+			call GetFileAttributes
+			mov output, eax
+	}
+	if (output == 0x01 || output == 17){
+		_asm{
+			mov eax, 00h
+				push eax
+				mov  eax, file2
+				push eax
+				call SetFileAttributes
+				pop ebx
+				pop ebx
+		}
+	}
+	else if (output == 0x03){ // gdy ukryty i tylko do odczytu
+		_asm{
+			mov eax, 02h
+				push eax
+				mov  eax, file2
+				push eax
+				call SetFileAttributes
+				pop ebx
+				pop ebx
+		}
+	}
+	else if (output == 0x02){ // gdy plik jest ukryty
+		_asm{
+			mov eax, 03h
+				push eax
+				mov  eax, file2
+				push eax
+				call SetFileAttributes
+				pop ebx
+				pop ebx
+		}
+	}
+	else{//ukrywanie
+		_asm{
+			mov eax, 01h
 				push eax
 				mov  eax, file2
 				push eax
@@ -273,7 +394,7 @@ void listujPliki(const char * nazwa_sciezki){
 						call GetFileAttributes
 						mov output, eax
 				}
-				cout << "   " << output;
+				cout << "   " << output; // Wyœwietlanie pe³nego kodu atrybutów. Trzeba go rozkodowaæ, co jest wykonane za pomoc¹ switcha.
 				switch (output){
 					case 0x01: // tylko do odczytu
 						cout << " ro ";
@@ -287,22 +408,22 @@ void listujPliki(const char * nazwa_sciezki){
 					case 0x04: // systemowy
 						cout << " s ";
 						break;
-					case 0x10: // systemowy
+					case 0x10: // katalog
 						cout << " dir ";
 						break;
-					case 0x11: // systemowy
+					case 0x11: // katalog tylko do odczytu
 						cout << " dir ro ";
 						break;
-					case 0x12: // systemowy
+					case 0x12: // katalog ukryty
 						cout << " dir h ";
 						break;
-					case 0x14: // systemowy
+					case 0x14: // katalog tylko do odczytu i ukryty
 						cout << " dir ro-h ";
 						break;
 					case 0x20: // archiwalny
 						cout << " a ";
 						break;
-					case 0x30: // archiwalny
+					case 0x30: // katalog archiwalny
 						cout << " dir a ";
 						break;
 					case 128: // normalny
