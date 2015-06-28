@@ -23,7 +23,7 @@ CX         Attribute specified
 
 //char file[] = "C:\\Users\\Maciek\\SAMPLE.TXT";//"D:\\Dropbox\\TeX\\MHDD\\instrukcjaMHDD.pdf";
 string nowy;
-string test = "C:\\Users\\mrdaj_000\\Downloads\\PwA-master (3)\\PwA-master";
+string test;
 char* file = new char[test.size() + 1];
 char* file2 = new char[test.size() + 1];
 char* file3 = new char[test.size() + 1];
@@ -42,17 +42,21 @@ int main()
 	setlocale(LC_ALL, "");
 	int output;
 
-
+	char filename[_MAX_PATH];
+	GetModuleFileName(NULL, filename, _MAX_PATH);
+	test = string(filename);
+	std::string nazwa = test; // lub jakaœ œcie¿ka
+	unsigned post_after_last_slash = nazwa.find_last_of("/\\") + 1;
+	// + 1 aby katalog zawiera³ ostatni \ lub /  
+	std::string katalog = nazwa.substr(0, post_after_last_slash);
+	std::string plik = nazwa.substr(post_after_last_slash);
+	test = katalog;
 
 	strcpy(file, test.c_str());
 	while (file[0] != 'q'){
 
 		listujPliki(file);
 		file = nowaSciezka();
-
-
-
-		//file = "D:\\Dropbox\\TeX\\MHDD\\instrukcjaMHDD.pdf";
 		
 		/*
 		_asm{
